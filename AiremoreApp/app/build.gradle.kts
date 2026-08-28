@@ -18,7 +18,7 @@ android {
         // Change this to your real domain before building. Kept here (not
         // hardcoded in code) so switching servers (staging/live) is a
         // one-line edit. See NetworkModule.kt for how it's read.
-        buildConfigField("String", "API_BASE_URL", "\"https://your-domain.com/airemore_system/api/\"")
+         buildConfigField("String", "API_BASE_URL", "\"https://airemore-ph.com/airemore_system/api_addon/api/\"")
     }
 
     buildTypes {

@@ -30,6 +30,11 @@ data class RepairFormEntity(
     val ali: List<String> = emptyList(),
     val aliOther: String = "",
 
+    // Certification of Accomplishment — optional.
+    val coaType: String = "none", // "none" | "generic"
+    val coaDate: String? = null,
+    val coaGenericText: String? = null,
+
     val customerName: String = "",
     val customerPosition: String = "",
     val customerSignatureDate: String? = null,

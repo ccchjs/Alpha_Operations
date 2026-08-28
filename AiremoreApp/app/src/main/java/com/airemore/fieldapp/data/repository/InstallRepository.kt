@@ -2,6 +2,7 @@ package com.airemore.fieldapp.data.repository
 
 import android.content.Context
 import com.airemore.fieldapp.data.local.AppDatabase
+import com.airemore.fieldapp.data.local.InstallStartupCertificate
 import com.airemore.fieldapp.data.local.InstallUnit
 import com.airemore.fieldapp.data.local.SyncStatus
 import com.airemore.fieldapp.data.local.entity.InstallFormEntity
@@ -57,10 +58,14 @@ class InstallRepository(private val db: AppDatabase, private val context: Contex
                 "personnel" to form.personnel,
                 "units" to form.units.map { it.toApiMap() },
                 "pm_activity" to form.pmActivity,
+                "startups" to form.startups.map { it.toApiMap() },
                 "customer_name" to form.customerName,
                 "customer_position" to form.customerPosition,
                 "customer_signature_date" to form.customerSignatureDate,
                 "customer_signature" to form.customerSignaturePath?.let { pngToDataUrl(it) },
+                "coa_type" to form.coaType,
+                "coa_date" to form.coaDate,
+                "coa_generic_text" to form.coaGenericText,
             )
             val dataJson = gson.toJson(payload).toRequestBody()
             val photoParts = buildSitePhotoParts(form.photosBefore, form.photosAfter)
@@ -96,4 +101,21 @@ class InstallRepository(private val db: AppDatabase, private val context: Contex
 
 private fun InstallUnit.toApiMap(): Map<String, Any?> = mapOf(
     "quantity" to quantity, "ac_type" to acType, "brand" to brand, "model" to model, "capacity" to capacity,
+)
+
+private fun InstallStartupCertificate.toApiMap(): Map<String, Any?> = mapOf(
+    "serial_ahu_fcu" to serialAhuFcu, "serial_accu" to serialAccu,
+    "pressure_suction_supply" to pressureSuctionSupply, "pressure_discharge_return" to pressureDischargeReturn,
+    "temp_return_air" to tempReturnAir, "temp_supply_air" to tempSupplyAir,
+    "temp_accu_in" to tempAccuIn, "temp_accu_out" to tempAccuOut,
+    "voltage_l1_l2" to voltageL1L2, "voltage_l2_l3" to voltageL2L3, "voltage_l1_l3" to voltageL1L3,
+    "ampere_t1" to ampereT1, "ampere_t2" to ampereT2, "ampere_t3" to ampereT3,
+    "ambient_temp" to ambientTemp, "room_temp" to roomTemp,
+    "pipe_dia_suction_supply" to pipeDiaSuctionSupply, "pipe_dia_discharge_return" to pipeDiaDischargeReturn,
+    "pipe_dia_drain" to pipeDiaDrain,
+    "pipe_len_biref_line" to pipeLenBirefLine, "pipe_len_drain_line" to pipeLenDrainLine,
+    "wire_feeder_line" to wireFeederLine, "wire_control_wires" to wireControlWires,
+    "breaker_size" to breakerSize,
+    "pipe_insul_biref_line" to pipeInsulBirefLine, "pipe_insul_drain_line" to pipeInsulDrainLine,
+    "remarks" to remarks, "witnessed_by" to witnessedBy,
 )

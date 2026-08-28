@@ -270,6 +270,17 @@ private fun FindingsStep(form: RepairFormEntity, lookups: LookupData, onUpdate: 
 
 @Composable
 private fun CustomerSignatureStep(form: RepairFormEntity, onUpdate: ((RepairFormEntity) -> RepairFormEntity) -> Unit) {
+    CoaSection(
+        coaType = form.coaType,
+        onCoaTypeChange = { v -> onUpdate { it.copy(coaType = v) } },
+        coaDate = form.coaDate ?: "",
+        onCoaDateChange = { v -> onUpdate { it.copy(coaDate = v.ifBlank { null }) } },
+        coaGenericText = form.coaGenericText ?: "",
+        onCoaGenericTextChange = { v -> onUpdate { it.copy(coaGenericText = v) } },
+        dateField = { label, value, onChange -> DatePickerFieldR(label, value, onChange) },
+    )
+    Spacer(Modifier.height(16.dp))
+
     SectionLabel("Customer")
     OutlinedTextField(form.customerName, { v -> onUpdate { it.copy(customerName = v) } }, label = { Text("Pangalan ng Customer") }, modifier = Modifier.fillMaxWidth())
     OutlinedTextField(form.customerPosition, { v -> onUpdate { it.copy(customerPosition = v) } }, label = { Text("Position (optional)") }, modifier = Modifier.fillMaxWidth())

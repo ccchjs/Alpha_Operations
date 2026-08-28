@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.airemore.fieldapp.AiremoreApp
 import com.airemore.fieldapp.data.local.SyncStatus
+import com.airemore.fieldapp.sync.SyncScheduler
 import com.airemore.fieldapp.ui.theme.StatusDraft
 import com.airemore.fieldapp.ui.theme.StatusFailed
 import com.airemore.fieldapp.ui.theme.StatusPending
@@ -74,6 +75,17 @@ fun RecordListScreen(
             TopAppBar(
                 title = { Text(title) },
                 navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, null) } },
+                actions = {
+                    // Manual trigger: without this, a PENDING record only
+                    // gets retried by WorkManager's own scheduling (app
+                    // start, network-reconnect callback, or the 15-min
+                    // periodic tick) — there was no way for staff (or us,
+                    // debugging) to force an attempt right now and see the
+                    // result immediately.
+                    TextButton(onClick = { SyncScheduler.scheduleImmediate(app) }) {
+                        Text("I-sync Ngayon")
+                    }
+                },
             )
         }
     ) { padding ->
@@ -131,7 +143,12 @@ private fun RecordCard(row: RecordRow, onClick: () -> Unit) {
             }
             Spacer(Modifier.height(4.dp))
             Text(label, fontSize = 12.sp, color = color)
-            if (row.status == SyncStatus.FAILED && row.lastError != null) {
+            if (row.lastError != null && row.status != SyncStatus.SYNCED && row.status != SyncStatus.DRAFT) {
+                // Surfacing this even while PENDING (not just FAILED) matters:
+                // PENDING covers both "hasn't tried yet" and "tried, hit a
+                // network/server error, queued for auto-retry" — without this,
+                // a record stuck retrying the same failure looks identical to
+                // one just waiting for signal, and nobody can tell why.
                 Text(row.lastError, fontSize = 11.sp, color = StatusFailed, modifier = Modifier.padding(top = 2.dp))
             }
         }

@@ -2,6 +2,7 @@ package com.airemore.fieldapp.data.local.entity
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.airemore.fieldapp.data.local.InstallStartupCertificate
 import com.airemore.fieldapp.data.local.InstallUnit
 import com.airemore.fieldapp.data.local.SyncStatus
 import java.util.UUID
@@ -23,6 +24,14 @@ data class InstallFormEntity(
     val pmActivity: String = "", // free-text "details" of the install job
     val photosBefore: List<String> = emptyList(),
     val photosAfter: List<String> = emptyList(),
+
+    // Start-Up Certificate — one repeatable block per AC unit serial no.
+    val startups: List<InstallStartupCertificate> = emptyList(),
+
+    // Certification of Accomplishment — optional.
+    val coaType: String = "none", // "none" | "generic"
+    val coaDate: String? = null,
+    val coaGenericText: String? = null,
 
     val customerName: String = "",
     val customerPosition: String = "",

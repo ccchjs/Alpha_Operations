@@ -11,26 +11,44 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.view.WindowCompat
 
-val AiremoreBlue = Color(0xFF0B5FA5)
-val AiremoreBlueDark = Color(0xFF083F6E)
-val AiremoreAmber = Color(0xFFE8A33D)
-val StatusSynced = Color(0xFF2E7D32)
+// Palette pulled 1:1 from the web app's :root CSS variables
+// (assets/css/style.css) so the app matches the web exactly.
+val AiremoreNavy = Color(0xFF0B2E5C)      // --navy
+val AiremoreSteel = Color(0xFF1450A3)     // --steel
+val AiremoreAccent = Color(0xFF111111)    // --accent (buttons, "more" wordmark)
+val AiremoreBg = Color(0xFFF4F6F8)        // --bg
+val AiremorePanel = Color(0xFFFFFFFF)     // --panel
+val AiremoreBorder = Color(0xFFD9DEE3)    // --border
+val AiremoreText = Color(0xFF171717)      // --text
+val AiremoreTextMuted = Color(0xFF5B6570) // --text-muted
+val AiremoreOk = Color(0xFF2E8B57)        // --ok
+val AiremoreBad = Color(0xFFC0392B)       // --bad
+val AiremoreFieldBg = Color(0xFFFBFCFD)   // .field input background
+val AiremoreBtnHover = Color(0xFFCE5423)  // .btn-primary:hover
+
+// Kept as aliases so any existing references elsewhere still resolve.
+val AiremoreBlue = AiremoreSteel
+val AiremoreBlueDark = AiremoreNavy
+val AiremoreAmber = Color(0xFFC6790A)
+val StatusSynced = AiremoreOk
 val StatusPending = Color(0xFFB58900)
-val StatusFailed = Color(0xFFC62828)
+val StatusFailed = AiremoreBad
 val StatusDraft = Color(0xFF757575)
 
 private val LightColors = lightColorScheme(
-    primary = AiremoreBlue,
+    primary = AiremoreAccent,
     onPrimary = Color.White,
     primaryContainer = Color(0xFFD6E8F8),
-    secondary = AiremoreAmber,
-    surface = Color(0xFFFAFAFA),
-    background = Color(0xFFF4F6F8),
+    secondary = AiremoreSteel,
+    surface = AiremorePanel,
+    background = AiremoreBg,
+    error = AiremoreBad,
+    outline = AiremoreBorder,
 )
 
 private val DarkColors = darkColorScheme(
     primary = Color(0xFF7FB8E8),
-    secondary = AiremoreAmber,
+    secondary = AiremoreSteel,
 )
 
 @Composable

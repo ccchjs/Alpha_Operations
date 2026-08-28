@@ -82,4 +82,52 @@ data class Company(
     val name: String,
     val address: String?,
     val type: String,
+    val branchName: String? = null,
+) {
+    val isSmStore: Boolean get() = type == "sm_store"
+}
+
+/** One row of the SM Store PM form's "Particulars" section (company_particulars → pm_form_particulars). */
+data class PmParticular(
+    val item: String = "",
+    var tempBefore: String = "",
+    var tempAfter: String = "",
+    var status: String = "",
 )
+
+/** One block of the Installation form's Start-Up Certificate sub-form (28 technical fields, admin/engineer-filled). */
+data class InstallStartupCertificate(
+    val clientBlockUuid: String = UUID.randomUUID().toString(),
+    var serialAhuFcu: String = "",
+    var serialAccu: String = "",
+    var pressureSuctionSupply: String = "",
+    var pressureDischargeReturn: String = "",
+    var tempReturnAir: String = "",
+    var tempSupplyAir: String = "",
+    var tempAccuIn: String = "",
+    var tempAccuOut: String = "",
+    var voltageL1L2: String = "",
+    var voltageL2L3: String = "",
+    var voltageL1L3: String = "",
+    var ampereT1: String = "",
+    var ampereT2: String = "",
+    var ampereT3: String = "",
+    var ambientTemp: String = "",
+    var roomTemp: String = "",
+    var pipeDiaSuctionSupply: String = "",
+    var pipeDiaDischargeReturn: String = "",
+    var pipeDiaDrain: String = "",
+    var pipeLenBirefLine: String = "",
+    var pipeLenDrainLine: String = "",
+    var wireFeederLine: String = "",
+    var wireControlWires: String = "",
+    var breakerSize: String = "",
+    var pipeInsulBirefLine: String = "",
+    var pipeInsulDrainLine: String = "",
+    var remarks: String = "",
+    var witnessedBy: String = "",
+)
+
+/** One checked item in the SM Store PM Checklist (grouped A/B/C — see lookups.php sm_store_checklist_groups). */
+data class SmChecklistItem(val key: String, val text: String)
+data class SmChecklistGroup(val letter: String, val title: String, val items: List<SmChecklistItem>)

@@ -8,6 +8,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -72,7 +73,7 @@ fun DashboardScreen(
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
             item {
-                Text("Hi, ${fullName.ifBlank { "Staff" }} 👋", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                Text("Hi, ${fullName?.ifBlank { "Staff" } ?: "Staff"} 👋", fontSize = 20.sp, fontWeight = FontWeight.Bold)
             }
 
             if (pendingTotal > 0 || failedTotal > 0) {

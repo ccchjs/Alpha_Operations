@@ -17,6 +17,10 @@ interface ApiService {
     @GET("lookups.php")
     suspend fun getLookups(): Response<LookupsResponse>
 
+    /** SM Store PM form: particulars assigned to the selected company. */
+    @GET("company_particulars.php")
+    suspend fun getCompanyParticulars(@Query("company_id") companyId: Int): Response<CompanyParticularsResponse>
+
     @POST("companies_add.php")
     suspend fun addCompany(@Body body: AddCompanyRequest): Response<AddCompanyResponse>
 

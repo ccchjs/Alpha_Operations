@@ -2,6 +2,7 @@ package com.airemore.fieldapp.data.repository
 
 import android.content.Context
 import com.airemore.fieldapp.data.local.AppDatabase
+import com.airemore.fieldapp.data.local.PmParticular
 import com.airemore.fieldapp.data.local.PmUnit
 import com.airemore.fieldapp.data.local.SyncStatus
 import com.airemore.fieldapp.data.local.entity.PmFormEntity
@@ -66,7 +67,11 @@ class PmRepository(private val db: AppDatabase, private val context: Context) {
                 "form_date" to form.formDate,
                 "work_order_no" to form.workOrderNo,
                 "personnel" to form.personnel,
-                "units" to form.units.map { it.toApiMap() },
+                "is_sm_store" to form.isSmStore,
+                "units" to if (form.isSmStore) emptyList() else form.units.map { it.toApiMap() },
+                "sm_checklist" to form.smChecklist,
+                "particulars" to form.particulars.map { it.toApiMap() },
+                "pm_statement" to form.pmStatement,
                 "findings" to form.findings,
                 "afi" to form.afi, "afi_other" to form.afiOther,
                 "recommendation" to form.recommendation, "recommendation_other" to form.recommendationOther,
@@ -77,9 +82,13 @@ class PmRepository(private val db: AppDatabase, private val context: Context) {
                 "customer_position" to form.customerPosition,
                 "customer_signature_date" to form.customerSignatureDate,
                 "customer_signature" to form.customerSignaturePath?.let { pngToDataUrl(it) },
+                "coa_type" to form.coaType,
+                "coa_month_year" to form.coaMonthYear,
+                "coa_date" to form.coaDate,
+                "coa_generic_text" to form.coaGenericText,
             )
             val dataJson = gson.toJson(payload).toRequestBody()
-            val photoParts = buildPhotoParts(
+            val photoParts = if (form.isSmStore) emptyList() else buildPhotoParts(
                 form.units.mapIndexed { index, u -> index to (u.photosBefore to u.photosAfter) }
             )
 
@@ -128,4 +137,11 @@ private fun PmUnit.toApiMap(): Map<String, Any?> = mapOf(
     "temp_return_before" to tempReturnBefore.ifBlank { null },
     "temp_return_after" to tempReturnAfter.ifBlank { null },
     "checklist" to checklist.map { mapOf("item_name" to it.itemName, "status" to it.status, "remarks" to it.remarks) },
+)
+
+private fun PmParticular.toApiMap(): Map<String, Any?> = mapOf(
+    "item" to item,
+    "temp_before" to tempBefore.ifBlank { null },
+    "temp_after" to tempAfter.ifBlank { null },
+    "status" to status.ifBlank { null },
 )

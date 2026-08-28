@@ -47,8 +47,16 @@ fun InstallFormScreen(app: AiremoreApp, localId: Long, onDone: () -> Unit) {
     }
 
     fun update(transform: (InstallFormEntity) -> InstallFormEntity) {
-        form = transform(currentForm)
-        scope.launch { app.installRepository.saveDraft(form!!) }
+        // Always read the latest state at the moment of the edit, not a
+        // snapshot captured at the start of this recomposition. Two edits
+        // landing in the same frame (e.g. typing Address then Date quickly)
+        // would otherwise both transform from the same stale `currentForm`,
+        // and whichever write happened last would silently wipe out the
+        // other field's change.
+        val latest = form ?: return
+        val updated = transform(latest)
+        form = updated
+        scope.launch { app.installRepository.saveDraft(updated) }
     }
 
     val stepTitle = listOf("Company Info", "Personnel", "Units", "Larawan & Details", "Customer & Pirma")[step]

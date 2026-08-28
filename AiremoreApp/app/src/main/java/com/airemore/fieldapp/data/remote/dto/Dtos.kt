@@ -23,7 +23,11 @@ data class CompanyDto(
     val name: String,
     val address: String?,
     val type: String,
+    val branch_name: String? = null,
 )
+
+data class SmChecklistItemDto(val key: String, val text: String)
+data class SmChecklistGroupDto(val letter: String, val title: String, val items: List<SmChecklistItemDto> = emptyList())
 
 data class LookupsResponse(
     val success: Boolean,
@@ -35,6 +39,15 @@ data class LookupsResponse(
     val pm_checklist_items: List<String> = emptyList(),
     val repair_checklist_items: List<String> = emptyList(),
     val repair_finding_options: Map<String, List<String>> = emptyMap(),
+    val sm_store_checklist_groups: List<SmChecklistGroupDto> = emptyList(),
+)
+
+/** Response of GET /api/company_particulars.php?company_id=… (SM Store PM form). */
+data class CompanyParticularDto(val particular_name: String, val sort_order: Int = 0)
+data class CompanyParticularsResponse(
+    val success: Boolean,
+    val message: String? = null,
+    val particulars: List<CompanyParticularDto> = emptyList(),
 )
 
 data class AddCompanyRequest(val name: String, val address: String, val type: String = "regular")

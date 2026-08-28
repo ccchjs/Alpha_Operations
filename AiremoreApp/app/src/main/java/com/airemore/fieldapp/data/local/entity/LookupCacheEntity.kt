@@ -19,5 +19,6 @@ data class LookupCacheEntity(
     val pmChecklistItemsJson: String = "[]",
     val repairChecklistItemsJson: String = "[]",
     val findingOptionsJson: String = "{}", // {afi:[], recommendation:[], action_taken:[], ali:[]}
+    val smChecklistGroupsJson: String = "[]", // SM Store PM Checklist, grouped A/B/C
     val updatedAtMillis: Long = 0,
 )

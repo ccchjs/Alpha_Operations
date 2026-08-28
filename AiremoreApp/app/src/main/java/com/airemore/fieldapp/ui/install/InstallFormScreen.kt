@@ -4,6 +4,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -12,6 +14,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.airemore.fieldapp.AiremoreApp
+import com.airemore.fieldapp.data.local.InstallStartupCertificate
 import com.airemore.fieldapp.data.local.InstallUnit
 import com.airemore.fieldapp.data.local.entity.InstallFormEntity
 import com.airemore.fieldapp.data.repository.LookupData
@@ -20,7 +23,7 @@ import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 
-private const val TOTAL_STEPS = 5
+private const val TOTAL_STEPS = 6
 
 @Composable
 fun InstallFormScreen(app: AiremoreApp, localId: Long, onDone: () -> Unit) {
@@ -59,7 +62,7 @@ fun InstallFormScreen(app: AiremoreApp, localId: Long, onDone: () -> Unit) {
         scope.launch { app.installRepository.saveDraft(updated) }
     }
 
-    val stepTitle = listOf("Company Info", "Personnel", "Units", "Larawan & Details", "Customer & Pirma")[step]
+    val stepTitle = listOf("Company Info", "Personnel", "Units", "Start-Up Certificate", "Larawan & Details", "Customer & Pirma")[step]
 
     WizardScaffold(
         title = "Installation",
@@ -78,15 +81,16 @@ fun InstallFormScreen(app: AiremoreApp, localId: Long, onDone: () -> Unit) {
             0 -> InfoStep(currentForm, lookups, onUpdate = ::update)
             1 -> PersonnelStep(currentForm, onUpdate = ::update)
             2 -> UnitsStep(currentForm, lookups, onUpdate = ::update)
-            3 -> DetailsPhotosStep(currentForm, onUpdate = ::update)
-            4 -> CustomerSignatureStep(currentForm, onUpdate = ::update)
+            3 -> StartupCertificatesStep(currentForm, onUpdate = ::update)
+            4 -> DetailsPhotosStep(currentForm, onUpdate = ::update)
+            5 -> CustomerSignatureStep(currentForm, onUpdate = ::update)
         }
     }
 }
 
 private fun stepIsValid(step: Int, form: InstallFormEntity): Boolean = when (step) {
     0 -> form.companyName.isNotBlank() && form.formDate.isNotBlank()
-    4 -> form.customerName.isNotBlank() && form.customerSignaturePath != null
+    5 -> form.customerName.isNotBlank() && form.customerSignaturePath != null
     else -> true
 }
 
@@ -217,6 +221,130 @@ private fun UnitsStep(form: InstallFormEntity, lookups: LookupData, onUpdate: ((
 }
 
 @Composable
+private fun StartupCertificatesStep(form: InstallFormEntity, onUpdate: ((InstallFormEntity) -> InstallFormEntity) -> Unit) {
+    var quickSerial by remember { mutableStateOf("") }
+
+    SectionLabel("Start-Up Certificate (${form.startups.size})")
+    Text(
+        "Optional per unit. Type a serial number and tap Add — repeat for every unit — or add a blank block below.",
+        fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
+    Spacer(Modifier.height(8.dp))
+    Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+        OutlinedTextField(
+            value = quickSerial, onValueChange = { quickSerial = it },
+            label = { Text("Serial No. (AHU/FCU)") }, modifier = Modifier.weight(1f), singleLine = true,
+        )
+        Spacer(Modifier.width(8.dp))
+        Button(onClick = {
+            if (quickSerial.isNotBlank()) {
+                onUpdate { f -> f.copy(startups = f.startups + InstallStartupCertificate(serialAhuFcu = quickSerial)) }
+                quickSerial = ""
+            }
+        }) { Text("Add") }
+    }
+    Spacer(Modifier.height(12.dp))
+
+    form.startups.forEachIndexed { index, s ->
+        StartupCertificateCard(
+            index = index, cert = s,
+            onChange = { updated -> onUpdate { f -> f.copy(startups = f.startups.toMutableList().also { it[index] = updated }) } },
+            onRemove = { onUpdate { f -> f.copy(startups = f.startups.toMutableList().also { it.removeAt(index) }) } },
+        )
+        Spacer(Modifier.height(8.dp))
+    }
+    OutlinedButton(onClick = { onUpdate { f -> f.copy(startups = f.startups + InstallStartupCertificate()) } }) {
+        Icon(Icons.Filled.Add, contentDescription = null); Spacer(Modifier.width(4.dp)); Text("Magdagdag ng Blangkong Block")
+    }
+}
+
+@Composable
+private fun StartupCertificateCard(index: Int, cert: InstallStartupCertificate, onChange: (InstallStartupCertificate) -> Unit, onRemove: () -> Unit) {
+    var expanded by remember { mutableStateOf(true) }
+    val decimalOpts = androidx.compose.foundation.text.KeyboardOptions(keyboardType = KeyboardType.Decimal)
+
+    fun field(label: String, value: String, onValueChange: (String) -> Unit, modifier: Modifier = Modifier.fillMaxWidth()) {
+        OutlinedTextField(value, onValueChange, label = { Text(label) }, keyboardOptions = decimalOpts, modifier = modifier, singleLine = true)
+    }
+
+    Card(Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(12.dp)) {
+            Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                val title = cert.serialAhuFcu.ifBlank { "Start-Up Certificate ${index + 1}" }
+                Text(title, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
+                IconButton(onClick = { expanded = !expanded }) { Icon(if (expanded) Icons.Filled.ExpandLess else Icons.Filled.ExpandMore, null) }
+                IconButton(onClick = onRemove) { Icon(Icons.Filled.Delete, contentDescription = "Remove") }
+            }
+            if (expanded) {
+                Spacer(Modifier.height(6.dp))
+                OutlinedTextField(cert.serialAhuFcu, { onChange(cert.copy(serialAhuFcu = it)) }, label = { Text("Serial No. — AHU/FCU") }, modifier = Modifier.fillMaxWidth(), singleLine = true)
+                Spacer(Modifier.height(8.dp))
+                OutlinedTextField(cert.serialAccu, { onChange(cert.copy(serialAccu = it)) }, label = { Text("Serial No. — ACCU") }, modifier = Modifier.fillMaxWidth(), singleLine = true)
+
+                Spacer(Modifier.height(12.dp))
+                Text("Operating Data", fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
+                Spacer(Modifier.height(6.dp))
+                field("Suction/Supply Pressure (psig)", cert.pressureSuctionSupply, { onChange(cert.copy(pressureSuctionSupply = it)) })
+                Spacer(Modifier.height(6.dp))
+                field("Discharge/Return Pressure (psig)", cert.pressureDischargeReturn, { onChange(cert.copy(pressureDischargeReturn = it)) })
+                Spacer(Modifier.height(6.dp))
+                field("Return Air Temp (°C)", cert.tempReturnAir, { onChange(cert.copy(tempReturnAir = it)) })
+                Spacer(Modifier.height(6.dp))
+                field("Supply Air Temp (°C)", cert.tempSupplyAir, { onChange(cert.copy(tempSupplyAir = it)) })
+                Spacer(Modifier.height(6.dp))
+                field("ACCU In (°C)", cert.tempAccuIn, { onChange(cert.copy(tempAccuIn = it)) })
+                Spacer(Modifier.height(6.dp))
+                field("ACCU Out (°C)", cert.tempAccuOut, { onChange(cert.copy(tempAccuOut = it)) })
+                Spacer(Modifier.height(6.dp))
+                field("Voltage L1/L2", cert.voltageL1L2, { onChange(cert.copy(voltageL1L2 = it)) })
+                Spacer(Modifier.height(6.dp))
+                field("Voltage L2/L3", cert.voltageL2L3, { onChange(cert.copy(voltageL2L3 = it)) })
+                Spacer(Modifier.height(6.dp))
+                field("Voltage L1/L3", cert.voltageL1L3, { onChange(cert.copy(voltageL1L3 = it)) })
+                Spacer(Modifier.height(6.dp))
+                field("Ampere T1", cert.ampereT1, { onChange(cert.copy(ampereT1 = it)) })
+                Spacer(Modifier.height(6.dp))
+                field("Ampere T2", cert.ampereT2, { onChange(cert.copy(ampereT2 = it)) })
+                Spacer(Modifier.height(6.dp))
+                field("Ampere T3", cert.ampereT3, { onChange(cert.copy(ampereT3 = it)) })
+                Spacer(Modifier.height(6.dp))
+                field("Ambient Temp (°C)", cert.ambientTemp, { onChange(cert.copy(ambientTemp = it)) })
+                Spacer(Modifier.height(6.dp))
+                field("Room Temp (°C)", cert.roomTemp, { onChange(cert.copy(roomTemp = it)) })
+
+                Spacer(Modifier.height(12.dp))
+                Text("Installation Data", fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
+                Spacer(Modifier.height(6.dp))
+                field("Pipe Dia. Suction/Supply (mm)", cert.pipeDiaSuctionSupply, { onChange(cert.copy(pipeDiaSuctionSupply = it)) })
+                Spacer(Modifier.height(6.dp))
+                field("Pipe Dia. Discharge/Return (mm)", cert.pipeDiaDischargeReturn, { onChange(cert.copy(pipeDiaDischargeReturn = it)) })
+                Spacer(Modifier.height(6.dp))
+                field("Pipe Dia. Drain (mm)", cert.pipeDiaDrain, { onChange(cert.copy(pipeDiaDrain = it)) })
+                Spacer(Modifier.height(6.dp))
+                field("Pipe Length B.I./Ref't Line (m)", cert.pipeLenBirefLine, { onChange(cert.copy(pipeLenBirefLine = it)) })
+                Spacer(Modifier.height(6.dp))
+                field("Pipe Length Drain Line (m)", cert.pipeLenDrainLine, { onChange(cert.copy(pipeLenDrainLine = it)) })
+                Spacer(Modifier.height(6.dp))
+                field("Wire Size Feeder Line (mm²)", cert.wireFeederLine, { onChange(cert.copy(wireFeederLine = it)) })
+                Spacer(Modifier.height(6.dp))
+                field("Wire Size Control Wires (mm²)", cert.wireControlWires, { onChange(cert.copy(wireControlWires = it)) })
+                Spacer(Modifier.height(6.dp))
+                field("Breaker Size (amps)", cert.breakerSize, { onChange(cert.copy(breakerSize = it)) })
+                Spacer(Modifier.height(6.dp))
+                field("Pipe Insulation B.I./Ref't Line", cert.pipeInsulBirefLine, { onChange(cert.copy(pipeInsulBirefLine = it)) })
+                Spacer(Modifier.height(6.dp))
+                field("Pipe Insulation Drain Line", cert.pipeInsulDrainLine, { onChange(cert.copy(pipeInsulDrainLine = it)) })
+
+                Spacer(Modifier.height(12.dp))
+                OutlinedTextField(cert.remarks, { onChange(cert.copy(remarks = it)) }, label = { Text("Remarks") }, modifier = Modifier.fillMaxWidth(), minLines = 2)
+                Spacer(Modifier.height(8.dp))
+                OutlinedTextField(cert.witnessedBy, { onChange(cert.copy(witnessedBy = it)) }, label = { Text("Witnessed By (Mall Representative)") }, modifier = Modifier.fillMaxWidth())
+            }
+        }
+    }
+}
+
+@Composable
 private fun DetailsPhotosStep(form: InstallFormEntity, onUpdate: ((InstallFormEntity) -> InstallFormEntity) -> Unit) {
     SectionLabel("Detalye ng Trabaho")
     OutlinedTextField(form.pmActivity, { v -> onUpdate { it.copy(pmActivity = v) } }, label = { Text("Detalye / gawain sa site") }, modifier = Modifier.fillMaxWidth(), minLines = 3)
@@ -228,6 +356,24 @@ private fun DetailsPhotosStep(form: InstallFormEntity, onUpdate: ((InstallFormEn
 
 @Composable
 private fun CustomerSignatureStep(form: InstallFormEntity, onUpdate: ((InstallFormEntity) -> InstallFormEntity) -> Unit) {
+    CoaSection(
+        coaType = form.coaType,
+        onCoaTypeChange = { v -> onUpdate { it.copy(coaType = v) } },
+        coaDate = form.coaDate ?: "",
+        onCoaDateChange = { v -> onUpdate { it.copy(coaDate = v.ifBlank { null }) } },
+        coaGenericText = form.coaGenericText ?: "",
+        onCoaGenericTextChange = { v -> onUpdate { it.copy(coaGenericText = v) } },
+        dateField = { label, value, onChange ->
+            OutlinedTextField(
+                value = value, onValueChange = onChange,
+                label = { Text(label) }, placeholder = { Text("YYYY-MM-DD") },
+                trailingIcon = { TextButton(onClick = { onChange(SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())) }) { Text("Today") } },
+                modifier = Modifier.fillMaxWidth(),
+            )
+        },
+    )
+    Spacer(Modifier.height(16.dp))
+
     SectionLabel("Customer")
     OutlinedTextField(form.customerName, { v -> onUpdate { it.copy(customerName = v) } }, label = { Text("Pangalan ng Customer") }, modifier = Modifier.fillMaxWidth())
     OutlinedTextField(form.customerPosition, { v -> onUpdate { it.copy(customerPosition = v) } }, label = { Text("Position (optional)") }, modifier = Modifier.fillMaxWidth())

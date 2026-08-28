@@ -65,6 +65,9 @@ class RepairRepository(private val db: AppDatabase, private val context: Context
                 "customer_position" to form.customerPosition,
                 "customer_signature_date" to form.customerSignatureDate,
                 "customer_signature" to form.customerSignaturePath?.let { pngToDataUrl(it) },
+                "coa_type" to form.coaType,
+                "coa_date" to form.coaDate,
+                "coa_generic_text" to form.coaGenericText,
             )
             val dataJson = gson.toJson(payload).toRequestBody()
             val photoParts = buildPhotoParts(

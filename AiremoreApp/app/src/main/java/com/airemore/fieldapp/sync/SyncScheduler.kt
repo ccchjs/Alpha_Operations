@@ -34,8 +34,15 @@ object SyncScheduler {
             .setConstraints(networkConstraints)
             .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, WorkRequest.MIN_BACKOFF_MILLIS, TimeUnit.MILLISECONDS)
             .build()
+        // REPLACE (not KEEP): every new trigger — a fresh Submit, or the
+        // network coming back via observeConnectivity() — must be able to
+        // cancel a previous attempt that's sitting in a growing exponential
+        // backoff wait from an earlier failure. With KEEP, that stale
+        // backoff timer wins and new/pending records just sit "queued"
+        // even though signal is back, because WorkManager silently drops
+        // the new request instead of giving the worker a fresh attempt.
         WorkManager.getInstance(context)
-            .enqueueUniqueWork(IMMEDIATE_WORK, ExistingWorkPolicy.KEEP, request)
+            .enqueueUniqueWork(IMMEDIATE_WORK, ExistingWorkPolicy.REPLACE, request)
     }
 
     fun schedulePeriodic(context: Context) {

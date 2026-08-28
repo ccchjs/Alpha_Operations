@@ -52,4 +52,24 @@ class Converters {
         val type = object : TypeToken<List<InstallUnit>>() {}.type
         return gson.fromJson(json, type) ?: emptyList()
     }
+
+    @TypeConverter
+    fun fromPmParticularList(list: List<PmParticular>): String = gson.toJson(list)
+
+    @TypeConverter
+    fun toPmParticularList(json: String): List<PmParticular> {
+        if (json.isBlank()) return emptyList()
+        val type = object : TypeToken<List<PmParticular>>() {}.type
+        return gson.fromJson(json, type) ?: emptyList()
+    }
+
+    @TypeConverter
+    fun fromInstallStartupCertificateList(list: List<InstallStartupCertificate>): String = gson.toJson(list)
+
+    @TypeConverter
+    fun toInstallStartupCertificateList(json: String): List<InstallStartupCertificate> {
+        if (json.isBlank()) return emptyList()
+        val type = object : TypeToken<List<InstallStartupCertificate>>() {}.type
+        return gson.fromJson(json, type) ?: emptyList()
+    }
 }

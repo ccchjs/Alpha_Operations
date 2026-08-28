@@ -263,6 +263,7 @@ private fun StartupCertificateCard(index: Int, cert: InstallStartupCertificate, 
     var expanded by remember { mutableStateOf(true) }
     val decimalOpts = androidx.compose.foundation.text.KeyboardOptions(keyboardType = KeyboardType.Decimal)
 
+    @Composable
     fun field(label: String, value: String, onValueChange: (String) -> Unit, modifier: Modifier = Modifier.fillMaxWidth()) {
         OutlinedTextField(value, onValueChange, label = { Text(label) }, keyboardOptions = decimalOpts, modifier = modifier, singleLine = true)
     }

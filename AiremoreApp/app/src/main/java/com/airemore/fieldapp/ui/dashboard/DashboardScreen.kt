@@ -58,7 +58,7 @@ fun DashboardScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Airemore Field") },
+                title = { Text("Airemore") },
                 actions = {
                     IconButton(onClick = { showLogoutConfirm = true }) {
                         Icon(Icons.AutoMirrored.Filled.Logout, contentDescription = "Logout")

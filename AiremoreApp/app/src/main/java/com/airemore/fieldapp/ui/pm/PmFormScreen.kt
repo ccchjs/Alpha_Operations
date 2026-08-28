@@ -352,6 +352,7 @@ private fun SmStoreChecklistParticularsStep(form: PmFormEntity, lookups: LookupD
 }
 
 /** SM Store variant's PM Statement — replaces Findings/AFI/Recommendation/Action Taken/ALI. */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun PmStatementStep(form: PmFormEntity, onUpdate: ((PmFormEntity) -> PmFormEntity) -> Unit) {
     val months = listOf("JANUARY","FEBRUARY","MARCH","APRIL","MAY","JUNE","JULY","AUGUST","SEPTEMBER","OCTOBER","NOVEMBER","DECEMBER")
